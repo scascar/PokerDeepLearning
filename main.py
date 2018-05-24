@@ -1,6 +1,8 @@
-from utils import pokerUtils
+from utils import PokerUtils
+from emulator import CustomEmulator
 
-pok = pokerUtils()
+emul = CustomEmulator(500, 20)
+pok = PokerUtils()
 
 print(pok.get_card_total_index('DA'))
 

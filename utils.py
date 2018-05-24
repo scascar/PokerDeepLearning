@@ -2,7 +2,7 @@ import numpy as np
 
 
 # Big ugly wrapper for all poker related functions
-class pokerUtils:
+class PokerUtils:
 
     def __init__(self):
         self.suits = {'H': 0,
