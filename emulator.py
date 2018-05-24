@@ -62,12 +62,24 @@ class CustomEmulator:
                 self.events[0]['round_state']['community_card'][4])] = 1
 
     def make_actions_feature(self):
-        pass
+        if(self.street == 'preflop'):
+            self.actions_feature[0] = self.pok.get_street_actions(
+                self.starting_stack, self.events[0]['round_state']['action_histories']['preflop'])
+        elif(self.street == 'flop'):
+            self.actions_feature[1] = self.pok.get_street_actions(
+                self.starting_stack, self.events[0]['round_state']['action_histories']['flop'])
+        elif(self.street == 'turn'):
+            self.actions_feature[2] = self.pok.get_street_actions(
+                self.starting_stack, self.events[0]['round_state']['action_histories']['turn'])
+        elif(self.street == 'river'):
+            self.actions_feature[3] = self.pok.get_street_actions(
+                self.starting_stack, self.events[0]['round_state']['action_histories']['river'])
 
     def make_features(self):
+        # actions are made every street
+        self.make_actions_feature()
         if(self.new_street != False):
             self.make_cards_feature()
-            self.make_actions_feature()
 
     def get_minraise_amount(self):
         for e in self.events:
