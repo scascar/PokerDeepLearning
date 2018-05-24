@@ -1,10 +1,9 @@
 from utils import PokerUtils
 from emulator import CustomEmulator
+import numpy as np
 
-emul = CustomEmulator(500, 20)
-pok = PokerUtils()
-
-print(pok.get_card_total_index('DA'))
-
-print(pok.get_street_actions(100, [{'action': 'SMALLBLIND', 'uuid': 'sb_player', 'amount': 10, 'add_amount': 10}, {'action': 'BIGBLIND', 'uuid': 'bb_player', 'amount': 20, 'add_amount': 10}, {
-      'action': 'RAISE', 'uuid': 'sb_player', 'amount': 100, 'add_amount': 80, 'paid': 90}, {'action': 'CALL', 'uuid': 'bb_player', 'amount': 100, 'paid': 80}]))
+emul = CustomEmulator(500, 10)
+emul.new_hand()
+sb_feat = np.concatenate([emul.players_cards[0], np.concatenate(
+    emul.cards_feature), np.concatenate(emul.actions_feature)])
+print(sb_feat.shape)

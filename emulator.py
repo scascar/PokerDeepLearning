@@ -14,8 +14,8 @@ class CustomEmulator:
             player_num=2, max_round=10, small_blind_amount=small_blind, ante_amount=0)
 
         self.players_info = {
-            "sb_player": {"name": "sb_player", "stack": starting_stack},
             "bb_player": {"name": "bb_player", "stack": starting_stack},
+            "sb_player": {"name": "sb_player", "stack": starting_stack},
         }
 
         self.initial_game_state = self.emulator.generate_initial_game_state(
@@ -91,6 +91,11 @@ class CustomEmulator:
             if(e['type'] == 'event_ask_player'):
                 return e['valid_actions'][2]['amount']['max']
 
+    def get_call_amount(self):
+        for e in self.events:
+            if(e['type'] == 'event_ask_player'):
+                return e['valid_actions'][1]['amount']
+
     def get_sb_reward(self):
         for e in self.events:
             if(e['type'] == 'event_round_finish'):
@@ -98,3 +103,34 @@ class CustomEmulator:
                     return (e['winners'][0]['stack'] - self.starting_stack)
                 else:
                     return -(e['winners'][0]['stack'] - self.starting_stack)
+
+    def play_action(self, action):
+        if(action == 0):
+            self.game_state, self.events = self.emulator.apply_action(
+                self.game_state, 'fold', 0)
+        elif(action == 1):
+            self.game_state, self.events = self.emulator.apply_action(
+                self.game_state, 'call', self.get_call_amount())
+        elif(action == 2):
+            self.game_state, self.events = self.emulator.apply_action(
+                self.game_state, 'raise', self.get_minraise_amount())
+        elif(action == 3):
+            self.game_state, self.events = self.emulator.apply_action(
+                self.game_state, 'raise', self.get_all_in_amount())
+
+    def new_hand(self):
+        self.initial_game_state = self.emulator.generate_initial_game_state(
+            self.players_info)
+
+        self.street = 'preflop'
+
+        self.game_state, self.events = self.emulator.start_new_round(
+            self.initial_game_state)
+
+        self.players_cards = [np.zeros(52), np.zeros(52)]
+        self.cards_feature = [np.zeros(52), np.zeros(52), np.zeros(52)]
+
+        self.actions_feature = [np.zeros(6), np.zeros(
+            6), np.zeros(6), np.zeros(6)]
+
+        self.make_features()
