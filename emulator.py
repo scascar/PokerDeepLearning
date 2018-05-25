@@ -14,8 +14,8 @@ class CustomEmulator:
             player_num=2, max_round=10, small_blind_amount=small_blind, ante_amount=0)
 
         self.players_info = {
-            "bb_player": {"name": "bb_player", "stack": starting_stack},
             "sb_player": {"name": "sb_player", "stack": starting_stack},
+            "bb_player": {"name": "bb_player", "stack": starting_stack},
         }
 
         self.initial_game_state = self.emulator.generate_initial_game_state(
