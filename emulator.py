@@ -13,9 +13,10 @@ class CustomEmulator:
         self.emulator.set_game_rule(
             player_num=2, max_round=10, small_blind_amount=small_blind, ante_amount=0)
 
+        self.hole_cards = {}
         self.players_info = {
-            "sb_player": {"name": "sb_player", "stack": starting_stack},
             "bb_player": {"name": "bb_player", "stack": starting_stack},
+            "sb_player": {"name": "sb_player", "stack": starting_stack},
         }
 
         self.initial_game_state = self.emulator.generate_initial_game_state(
@@ -44,8 +45,14 @@ class CustomEmulator:
                 return self.street
         return False
 
+    def save_cards(self):
+        for player in self.game_state['table'].seats.players:
+            self.hole_cards[player.uuid] = [card.__str__()
+                                            for card in player.hole_card]
+
     def make_cards_feature(self):
         if(self.street == 'preflop'):
+            self.save_cards()
             for i in range(2):
                 self.players_cards[i][self.pok.get_card_total_index(
                     self.game_state['table'].seats.players[i].hole_card[0].__str__())] = 1
@@ -123,7 +130,7 @@ class CustomEmulator:
             self.players_info)
 
         self.street = 'preflop'
-
+        self.hole_cards = {}
         self.game_state, self.events = self.emulator.start_new_round(
             self.initial_game_state)
 
@@ -134,3 +141,26 @@ class CustomEmulator:
             6), np.zeros(6), np.zeros(6)]
 
         self.make_features()
+
+    def get_action_histories_text(self, hole_cards=False):
+        if(hole_cards == True):
+            print(self.hole_cards)
+
+        histo = self.events[0]['round_state']['action_histories']
+        hand_text = ""
+        for k, v in histo.items():
+            if(len(v) > 0):
+                hand_text += k+'\n'
+                for a in v:
+                    if(a['action'] == 'RAISE'):
+                        hand_text += a['uuid'] + \
+                            ' raises to ' + str(a['amount']) + '\n'
+                    elif(a['action'] == 'FOLD'):
+                        hand_text += a['uuid'] + ' folds\n'
+                    elif(a['action'] == 'CALL' and a['amount'] == 0):
+                        hand_text += a['uuid'] + ' checks\n'
+                    else:
+                        hand_text += a['uuid'] + ' ' + \
+                            a['action'] + ' ' + str(a['amount']) + '\n'
+
+        return hand_text
