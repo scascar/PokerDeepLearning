@@ -1,4 +1,5 @@
 import numpy as np
+from pypokerengine.utils.card_utils import estimate_hole_card_win_rate
 
 
 # Big ugly wrapper for all poker related functions
@@ -41,7 +42,73 @@ class PokerUtils:
         for card in cards:
             street[self.get_card_total_index(card)] = 1
 
-    # action history : round_state["action_histories"][street]
+    def is_suited(self, cards):
+        if self.get_suit(cards[0]) == self.get_suit(cards[1]):
+            return True
+        else:
+            return False
+
+    def is_pocket(self, cards):
+        if self.get_card_value_index(cards[0]) == self.get_card_value_index(cards[1]):
+            return True
+        else:
+            return False
+
+    def is_connector(self, cards):
+        diff = abs(self.get_card_value_index(
+            cards[0]) - self.get_card_value_index(cards[1]))
+        if diff == 1 or diff == 12:
+            return True
+        else:
+            return False
+
+    def is_one_gapper(self, cards):
+        diff = abs(self.get_card_value_index(
+            cards[0]) - self.get_card_value_index(cards[1]))
+        # missing A3 but who cares
+        if diff == 2:
+            return True
+        else:
+            return False
+
+    def two_broadways(self, cards):
+        minimal_card = min(self.get_card_value_index(
+            cards[0]), self.get_card_value_index(cards[1]))
+        if minimal_card >= 8:
+            return True
+        else:
+            return False
+
+    def highest_card(self, cards):
+        return max(self.get_card_value_index(cards[0]), self.get_card_value_index(cards[1]))
+
+    def has_low_card(self, cards):
+        minimal_card = min(self.get_card_value_index(
+            cards[0]), self.get_card_value_index(cards[1]))
+        if minimal_card < 5:
+            return True
+        else:
+            return False
+
+    def flop_is_monotone(self, cards):
+        if self.get_suit(cards[0]) == self.get_suit(cards[1]) and self.get_suit(cards[1]) == self.get_suit(cards[2]):
+            return True
+        else:
+            return False
+
+    def flop_is_two_suited(self, cards):
+        if self.flop_is_monotone(cards):
+            return False
+        if self.get_suit(cards[0]) == self.get_suit(cards[1]) or self.get_suit(cards[1]) == self.get_suit(cards[2]) or self.get_suit(cards[0]) == self.get_suit(cards[2]):
+            return True
+        else:
+            return False
+
+    def hand_strength_estimation(self, nb_sim, cards, community):
+        return estimate_hole_card_win_rate(nb_simulation=nb_sim, nb_player=2, hole_card=cards, community_card=community)
+
+        # action history : round_state["action_histories"][street]
+
     def get_street_actions(self, eff_stack, action_history):
         # only the first 3 actions per player. There is no sense in 7 betting
         actions = np.zeros(6)
