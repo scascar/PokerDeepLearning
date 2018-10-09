@@ -39,6 +39,7 @@ class CustomEmulator:
         return False
 
     def new_street(self):
+
         for e in self.events:
             if(e['type'] == 'event_new_street'):
                 self.street = e['street']
@@ -51,6 +52,24 @@ class CustomEmulator:
                                             for card in player.hole_card]
 
     def make_cards_feature(self):
+        if(self.street == 'preflop'):
+            self.save_cards()
+            for i in range(2):
+                self.players_cards[i][self.pok.get_card_total_index(
+                    self.game_state['table'].seats.players[i].hole_card[0].__str__())] = 1
+                self.players_cards[i][self.pok.get_card_total_index(
+                    self.game_state['table'].seats.players[i].hole_card[1].__str__())] = 1
+        elif(self.street == 'flop'):
+            for card in self.events[0]['round_state']['community_card']:
+                self.cards_feature[0][self.pok.get_card_total_index(card)] = 1
+        elif(self.street == 'turn'):
+            self.cards_feature[1][self.pok.get_card_total_index(
+                self.events[0]['round_state']['community_card'][3])] = 1
+        elif(self.street == 'river'):
+            self.cards_feature[2][self.pok.get_card_total_index(
+                self.events[0]['round_state']['community_card'][4])] = 1
+
+    def make_engineered_cards_feature(self):
         if(self.street == 'preflop'):
             self.save_cards()
             for i in range(2):
@@ -110,6 +129,12 @@ class CustomEmulator:
                     return (e['winners'][0]['stack'] - self.starting_stack)
                 else:
                     return -(e['winners'][0]['stack'] - self.starting_stack)
+
+    def get_spr(self):
+        pot = self.events[0]['round_state']['pot']['main']['amount']
+        stack = self.starting_stack - int(pot/2)
+        spr = stack/pot
+        return spr
 
     def play_action(self, action):
         if(action == 0):
