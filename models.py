@@ -22,11 +22,10 @@ def raw_model():
 
 def preflop_model():
 
-    # ranks, is_sb, starting stack/500
     input_n = Input(shape=(16,), name="input")
 
-    x = Dense(16, activation='relu')(input_n)
-    x = Dense(32, activation='relu')(x)
+    x = Dense(32, activation='relu')(input_n)
+    x = Dense(64, activation='relu')(x)
     x = Dense(16, activation='relu')(x)
     out = Dense(2)(x)
     model = Model(inputs=[input_n], outputs=out)
