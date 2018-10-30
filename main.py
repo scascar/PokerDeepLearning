@@ -3,6 +3,7 @@
 from utils import PokerUtils
 from engine import Engine
 from constants import Actions
+from treys import Card
 
 e = Engine()
 e.new_hand()
