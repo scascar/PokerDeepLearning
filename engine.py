@@ -26,6 +26,8 @@ class Engine:
         self.street_actions = [self.small_blind, self.big_blind]
         self.current_raise = self.big_blind
         self.turn = 0
+        self.action_features_by_street = []
+        self.current_action_feature = []
         self.current_street = Street.PREFLOP
         self.winner = -1
         #print('NEW STREET ====== ', str(self.current_street))
@@ -35,6 +37,29 @@ class Engine:
         for c in self.pocket_cards[player_index]:
             feat[Card.get_rank_int(c)] = 1
         return feat
+
+    def get_card_real_suit_int(self, card):
+        suit = Card.get_suit_int(card)
+        if suit == 1:
+            return 1
+        elif suit == 2:
+            return 2
+        elif suit == 4:
+            return 3
+        elif suit == 8:
+            return 4
+
+    def get_community_cards_features(self):
+        feat_flop = np.zeros(52)
+        feat_turn = np.zeros(52)
+        feat_river = np.zeros(52)
+        if self.current_street.value >= Street.FLOP.value:
+            for i in range(0, 3):
+                feat_flop[Card.get_rank_int(
+                    self.community_cards[i])*self.get_card_real_suit_int(self.community_cards[i])] = 1
+        if self.current_street.value >= Street.TURN:
+
+        return np.concatenate([feat_flop, feat_turn, feat_river])
 
     def has_suited_pockets(self, player_index):
         if Card.get_suit_int(self.pocket_cards[player_index][0]) == Card.get_rank_int(self.pocket_cards[player_index][1]):
