@@ -26,7 +26,8 @@ class Engine:
         self.street_actions = [self.small_blind, self.big_blind]
         self.current_raise = self.big_blind
         self.turn = 0
-        self.action_features_by_street = []
+        self.aggressor_by_street = np.zeros(8)
+        self.chips_put_by street = np.zeros(8)
         self.current_action_feature = []
         self.current_street = Street.PREFLOP
         self.winner = -1
@@ -58,6 +59,11 @@ class Engine:
                 feat_flop[Card.get_rank_int(
                     self.community_cards[i])*self.get_card_real_suit_int(self.community_cards[i])] = 1
         if self.current_street.value >= Street.TURN:
+            feat_turn[Card.get_rank_int(
+                self.community_cards[3])*self.get_card_real_suit_int(self.community_cards[3])] = 1
+        if self.current_street.value >= Street.RIVER:
+            feat_turn[Card.get_rank_int(
+                self.community_cards[4])*self.get_card_real_suit_int(self.community_cards[4])] = 1
 
         return np.concatenate([feat_flop, feat_turn, feat_river])
 
@@ -133,7 +139,18 @@ class Engine:
 
                 self.current_raise = amount
                 self.street_actions[self.turn] += amount
+                self.aggressor_by_street[self.current_street.value+self.turn] = 1
+                self.aggressor_by_street[self.current_street.value] = 0
+
                 #print('raising to ', str(self.street_actions[self.turn]))
+
+                # Bet but was a call
+                if self.street_actions[0] == self.street_actions[1]:
+                    self.current_street == Street.FINISHED
+                    self.winner = self.eval_winner()
+                    self.pot = list(
+                        map(operator.add, self.pot, self.street_actions))
+
                 self.turn = (self.turn+1) % 2
         else:
             print('HAND FINISHED, WINNER IS: ', str(self.winner))
@@ -147,6 +164,16 @@ class Engine:
         else:
             return 2
 
+    def get_pct_pot_amount_to_play(self, percentage):
+        totalPot = self.pot[0] + self.pot[1] + max(self.street_actions)
+        amount = int(totalPot*percentage) + \
+            abs(self.street_actions[0] - self.street_actions[1]) + 1
+        if amount > self.get_bet_range()[1]:
+            return self.get_bet_range()[1]
+        elif amount < self.get_bet_range()[0]:
+            return self.get_bet_range()[0]
+        return amount
+
     def get_sb_won(self):
         if self.winner == 0:
             return self.pot[1]
@@ -154,3 +181,27 @@ class Engine:
             return -self.pot[0]
         if self.winner == 2:
             return 0
+
+    # 0:fold
+    # 1:check/call
+    # 2:minraise/minbet
+    # 3:50% pot
+    # 4:pot
+    # 5:2pot
+    # 6:Shove
+
+    def play(self, action):
+        if action == 0:
+            self.play_action(Actions.FOLD, 0)
+        elif action == 1:
+            self.play_action(Actions.CALL, 0)
+        elif action == 2:
+            self.play_action(Actions.BET, self.get_bet_range()[0])
+        elif action == 3:
+            self.play_action(Actions.BET, self.get_pct_pot_amount_to_play(0.5))
+        elif action == 4:
+            self.play_action(Actions.BET, self.get_pct_pot_amount_to_play(1))
+        elif action == 5:
+            self.play_action(Actions.BET, self.get_pct_pot_amount_to_play(2))
+        elif action == 6:
+            self.play_action(Actions.BET, self.get_bet_range()[1])
