@@ -16,6 +16,7 @@ class Engine:
 
     def new_hand(self, starting_stack=500):
         #print("=============   NEW HAND   ================")
+        self.eval = Evaluator()
         self.deck = Deck()
         self.starting_stack = starting_stack
         self.pocket_cards = []
@@ -27,7 +28,7 @@ class Engine:
         self.current_raise = self.big_blind
         self.turn = 0
         self.aggressor_by_street = np.zeros(8)
-        self.chips_put_by street = np.zeros(8)
+        self.chips_put_by_street = np.zeros(8)
         self.current_action_feature = []
         self.current_street = Street.PREFLOP
         self.winner = -1
@@ -156,22 +157,24 @@ class Engine:
             print('HAND FINISHED, WINNER IS: ', str(self.winner))
 
     def eval_winner(self):
-        eval = Evaluator()
-        if eval.evaluate(self.pocket_cards[0], self.community_cards) < eval.evaluate(self.pocket_cards[1], self.community_cards):
+        sb_score, bb_score = self.eval.evaluate(self.pocket_cards[0], self.community_cards), self.eval.evaluate(
+            self.pocket_cards[1], self.community_cards)
+        if sb_score < bb_score:
             return 0
-        elif eval.evaluate(self.pocket_cards[1], self.community_cards) < eval.evaluate(self.pocket_cards[0], self.community_cards):
+        elif sb_score > bb_score:
             return 1
         else:
             return 2
 
     def get_pct_pot_amount_to_play(self, percentage):
+        range = self.get_bet_range()
         totalPot = self.pot[0] + self.pot[1] + max(self.street_actions)
         amount = int(totalPot*percentage) + \
-            abs(self.street_actions[0] - self.street_actions[1]) + 1
-        if amount > self.get_bet_range()[1]:
-            return self.get_bet_range()[1]
-        elif amount < self.get_bet_range()[0]:
-            return self.get_bet_range()[0]
+            abs(self.street_actions[0] - self.street_actions[1])
+        if amount > range[1]:
+            return range[1]
+        elif amount < range[0]:
+            return range[0]
         return amount
 
     def get_sb_won(self):
