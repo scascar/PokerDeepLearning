@@ -33,6 +33,21 @@ def preflop_model():
     return model
 
 
+def preflop_linear_model():
+
+    input_n = Input(shape=(5,), name="input")
+
+    x = Dense(16, activation='relu')(input_n)
+    x = Dense(32, activation='relu')(x)
+    x = Dense(64, activation='relu')(x)
+    x = Dense(32, activation='relu')(x)
+    x = Dense(16, activation='relu')(x)
+    out = Dense(2)(x)
+    model = Model(inputs=[input_n], outputs=out)
+    model.compile(optimizer='adam', loss='mse')
+    return model
+
+
 def save_model(model, name):
     model.save(name)
 

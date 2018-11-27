@@ -13,11 +13,11 @@ class Engine:
         self.big_blind = big_blind
         self.small_blind = small_blind
         self.deck = Deck()
+        self.eval = Evaluator()
 
     def new_hand(self, starting_stack=500):
         #print("=============   NEW HAND   ================")
-        self.eval = Evaluator()
-        self.deck = Deck()
+        self.deck.shuffle()
         self.starting_stack = starting_stack
         self.pocket_cards = []
         self.pocket_cards.append(self.deck.draw(2))
@@ -29,6 +29,8 @@ class Engine:
         self.turn = 0
         self.aggressor_by_street = np.zeros(8)
         self.chips_put_by_street = np.zeros(8)
+        self.chips_put_by_street[0] = self.small_blind
+        self.chips_put_by_street[1] = self.big_blind
         self.current_action_feature = []
         self.current_street = Street.PREFLOP
         self.winner = -1
