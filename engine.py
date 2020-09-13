@@ -71,7 +71,7 @@ class Engine:
         return np.concatenate([feat_flop, feat_turn, feat_river])
 
     def has_suited_pockets(self, player_index):
-        if Card.get_suit_int(self.pocket_cards[player_index][0]) == Card.get_rank_int(self.pocket_cards[player_index][1]):
+        if Card.get_suit_int(self.pocket_cards[player_index][0]) == Card.get_suit_int(self.pocket_cards[player_index][1]):
             return True
         else:
             return False
